@@ -42,13 +42,13 @@ jobs:
 
     - name: Publish for Windows
       run: |
-        dotnet publish ${{ env.PROJECT_PATH }} --configuration ${{ env.CONFIGURATION }} --runtime win-x64 --output ./artifacts/win-x64/ -p:PublishReadyToRun=true /p:Version=${{ steps.environments.outputs.version }} --self-contained true --verbosity diagnostic
+        dotnet publish ${{ env.PROJECT_PATH }} --configuration ${{ env.CONFIGURATION }} --runtime win-x64 --output ./artifacts/win-x64/ /p:Version=${{ steps.environments.outputs.version }}
 
     - name: Publish for macOS
-      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration ${{ env.CONFIGURATION }} --runtime osx-x64 --output ./artifacts/osx-x64/ -p:PublishReadyToRun=true /p:Version=${{ steps.environments.outputs.version }} --self-contained true --verbosity diagnostic
+      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration ${{ env.CONFIGURATION }} --runtime osx-x64 --output ./artifacts/osx-x64/ /p:Version=${{ steps.environments.outputs.version }}
 
     - name: Publish for Linux
-      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration ${{ env.CONFIGURATION }} --runtime linux-x64 --output ./artifacts/linux-x64/ -p:PublishReadyToRun=true /p:Version=${{ steps.environments.outputs.version }} --self-contained true --verbosity diagnostic
+      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration ${{ env.CONFIGURATION }} --runtime linux-x64 --output ./artifacts/linux-x64/ /p:Version=${{ steps.environments.outputs.version }}
 
     - name: Archive
       run: |
