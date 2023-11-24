@@ -6,7 +6,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageVersion>0.1.0</PackageVersion>
+    <AssemblyVersion>1.2.0</AssemblyVersion>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <InformationalVersion>$(AssemblyVersion)</InformationalVersion>
+    <PackageVersion>$(AssemblyVersion)</PackageVersion>
+    <Copyright>Copyright (c) zwei_222</Copyright>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/zwei222/NDummy.git</RepositoryUrl>
     <PackageProjectUrl>https://github.com/zwei222/NDummy</PackageProjectUrl>
