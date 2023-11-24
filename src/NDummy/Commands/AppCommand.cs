@@ -1,15 +1,65 @@
-﻿using NDummy.Core;
+﻿using System.CommandLine;
+using NDummy.Core;
 using NDummy.Core.Utilities;
 
 namespace NDummy.Commands;
 
-public sealed class AppCommand : ConsoleAppBase
+public sealed class AppCommand : RootCommand
 {
-    [RootCommand]
-    public async Task<int> RunAsync(
-        [Option(0, CommandDescriptions.Size)] string size,
-        [Option("o", CommandDescriptions.Output)] string output,
-        [Option(null, CommandDescriptions.Overwrite)] bool overwrite = false)
+    private readonly Argument<string> sizeArgument;
+
+    private readonly Option<string> outputOption;
+
+    private readonly Option<bool> overwriteOption;
+
+    public AppCommand()
+    {
+        // Arguments
+        this.sizeArgument = new Argument<string>(
+            name: "size",
+            description: CommandDescriptions.Size);
+        this.AddArgument(sizeArgument);
+
+        // Options
+        this.outputOption = new Option<string>(
+            aliases: new[] { "--output", "-o" },
+            description: CommandDescriptions.Output)
+        {
+            IsRequired = true
+        };
+        this.overwriteOption = new Option<bool>(
+            aliases: new[] { "--overwrite" },
+            description: CommandDescriptions.Overwrite,
+            getDefaultValue: static () => false);
+        this.AddOption(outputOption);
+        this.AddOption(overwriteOption);
+
+        // Handlers
+        this.SetHandlers();
+    }
+
+    private void SetHandlers()
+    {
+        this.SetHandler(async (context) =>
+        {
+            var size = context.ParseResult.GetValueForArgument(this.sizeArgument);
+            var output = context.ParseResult.GetValueForOption(this.outputOption)!;
+            var overwrite = context.ParseResult.GetValueForOption(this.overwriteOption);
+            var cancellationToken = context.GetCancellationToken();
+
+            await this.RunAsync(
+                size,
+                output,
+                overwrite,
+                cancellationToken).ConfigureAwait(false);
+        });
+    }
+
+    private async ValueTask RunAsync(
+        string size,
+        string output,
+        bool overwrite = false,
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -26,7 +76,7 @@ public sealed class AppCommand : ConsoleAppBase
                     output,
                     actualSize,
                     overwrite,
-                    this.Context.CancellationToken).ConfigureAwait(false);
+                    cancellationToken).ConfigureAwait(false);
             }
             catch (Exception)
             {
@@ -37,18 +87,16 @@ public sealed class AppCommand : ConsoleAppBase
 
                 throw;
             }
-
-            return 0;
         }
         catch (ArgumentException argumentException)
         {
             await Console.Error.WriteLineAsync(argumentException.Message);
-            return 1;
+            Environment.Exit(1);
         }
         catch (Exception exception)
         {
             await Console.Error.WriteLineAsync(exception.ToString());
-            return 1;
+            Environment.Exit(1);
         }
     }
 }

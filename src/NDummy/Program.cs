@@ -1,7 +1,6 @@
-﻿using NDummy.Commands;
+﻿using System.CommandLine;
+using NDummy.Commands;
 
-var builder = ConsoleApp.CreateBuilder(args);
-var consoleApp = builder.Build();
+var appCommand = new AppCommand();
 
-consoleApp.AddCommands<AppCommand>();
-await consoleApp.RunAsync().ConfigureAwait(false);
+await appCommand.InvokeAsync(args).ConfigureAwait(false);
