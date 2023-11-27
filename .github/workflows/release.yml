@@ -13,6 +13,20 @@ env:
   DOTNET_VERSION: 8
 
 jobs:
+  initialize:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.environments.outputs.version }}
+    steps:
+    - name: Set version
+      id: environments
+      run: |
+        branch_name=${{ github.ref_name }}
+        split=(${branch_name//// })
+        version=${split[1]}
+        echo "Version: $version"
+        echo "version=${version}" >> $GITHUB_OUTPUT
+
   release:
     strategy:
       matrix:
@@ -29,17 +43,8 @@ jobs:
             extension: ""
 
     runs-on: ${{ matrix.platform }}
-
+    needs: initialize
     steps:
-    - name: Set version
-      id: environments
-      run: |
-        branch_name=${{ github.ref_name }}
-        split=(${branch_name//// })
-        version=${split[1]}
-        echo "Version: $version"
-        echo "version=${version}" >> $GITHUB_OUTPUT
-
     - name: Checkout
       uses: actions/checkout@v3
 
@@ -52,11 +57,11 @@ jobs:
       run: dotnet restore
 
     - name: Build
-      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore /p:Version=${{ steps.environments.outputs.version }}
+      run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore /p:Version=${{ needs.initialize.outputs.version }}
 
     - name: Publish
       run: |
-        dotnet publish ${{ env.PROJECT_PATH }} --configuration ${{ env.CONFIGURATION }} --runtime ${{ matrix.runtime }} --output ./artifacts/ /p:Version=${{ steps.environments.outputs.version }}
+        dotnet publish ${{ env.PROJECT_PATH }} --configuration ${{ env.CONFIGURATION }} --runtime ${{ matrix.runtime }} --output ./artifacts/ /p:Version=${{ needs.initialize.outputs.version }}
 
     - name: Archive
       run: |
@@ -65,7 +70,7 @@ jobs:
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
-        name: Ver.${{ steps.environments.outputs.version }}
-        tag_name: v${{ steps.environments.outputs.version }}
+        name: Ver.${{ needs.initialize.outputs.version }}
+        tag_name: v${{ needs.initialize.outputs.version }}
         files: |
           ${{ env.BASE_NAME }}-${{ matrix.runtime }}.zip
