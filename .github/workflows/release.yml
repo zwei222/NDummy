@@ -63,7 +63,13 @@ jobs:
       run: |
         dotnet publish ${{ env.PROJECT_PATH }} --configuration ${{ env.CONFIGURATION }} --runtime ${{ matrix.runtime }} --output ./artifacts/ /p:Version=${{ needs.initialize.outputs.version }}
 
-    - name: Archive
+    - name: Archive for Windows
+      if: matrix.platform == 'windows-latest'
+      run: |
+        powershell Compress-Archive -Path ./artifacts/${{ env.EXE_NAME }}${{ matrix.extension }} -DestinationPath ${{ env.BASE_NAME }}-${{ matrix.runtime }}.zip
+
+    - name: Archive for macOS or Linux
+      if: matrix.platform != 'windows-latest'
       run: |
         zip -j ${{ env.BASE_NAME }}-${{ matrix.runtime }}.zip ./artifacts/${{ env.EXE_NAME }}${{ matrix.extension }}
 
