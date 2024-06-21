@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "NDummy.Console": {
+      "commandName": "Project",
+      "commandLineArgs": "2M -o 2MB.bin --overwrite"
+    },
+    "help": {
+      "commandName": "Project",
+      "commandLineArgs": "--help"
+    }
+  }
+}
