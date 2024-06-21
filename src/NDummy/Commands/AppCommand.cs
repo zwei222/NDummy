@@ -1,62 +1,30 @@
-﻿using System.CommandLine;
+﻿using ConsoleAppFramework;
 using NDummy.Core;
 using NDummy.Core.Utilities;
 
 namespace NDummy.Commands;
 
-public sealed class AppCommand : RootCommand
+public sealed class AppCommand
 {
-    private readonly Argument<string> sizeArgument;
-
-    private readonly Option<string> outputOption;
-
-    private readonly Option<bool> overwriteOption;
-
-    public AppCommand()
-    {
-        // Arguments
-        this.sizeArgument = new Argument<string>(
-            name: "size",
-            description: CommandDescriptions.Size);
-        this.AddArgument(sizeArgument);
-
-        // Options
-        this.outputOption = new Option<string>(
-            aliases: new[] { "--output", "-o" },
-            description: CommandDescriptions.Output)
-        {
-            IsRequired = true
-        };
-        this.overwriteOption = new Option<bool>(
-            aliases: new[] { "--overwrite" },
-            description: CommandDescriptions.Overwrite,
-            getDefaultValue: static () => false);
-        this.AddOption(outputOption);
-        this.AddOption(overwriteOption);
-
-        // Handlers
-        this.SetHandlers();
-    }
-
-    private void SetHandlers()
-    {
-        this.SetHandler(async (context) =>
-        {
-            var size = context.ParseResult.GetValueForArgument(this.sizeArgument);
-            var output = context.ParseResult.GetValueForOption(this.outputOption)!;
-            var overwrite = context.ParseResult.GetValueForOption(this.overwriteOption);
-            var cancellationToken = context.GetCancellationToken();
-
-            await this.RunAsync(
-                size,
-                output,
-                overwrite,
-                cancellationToken).ConfigureAwait(false);
-        });
-    }
-
-    private async ValueTask RunAsync(
-        string size,
+    /// <summary>
+    /// Create a dummy file of the specified size.
+    /// </summary>
+    /// <param name="size">
+    /// 
+    /// Specify the size of the file to be created. Acceptable units are:
+    /// - Bytes(no unit or 'B' after the number, e.g., 1024 or 1024B)
+    /// - Kilobytes(KB, e.g., 10KB)
+    ///     - Megabytes(M or MB, e.g., 1M or 1MB)
+    /// - Gigabytes(G or GB, e.g., 1G or 1GB)
+    /// The size argument does not have a default and must be provided.
+    /// </param>
+    /// <param name="output">-o, Specify the output file path where the file will be written.</param>
+    /// <param name="overwrite">Allows the command to overwrite the output file if it already exists at the specified path. Without this option, if the output file exists, the command will fail.</param>
+    /// <param name="cancellationToken">キャンセルトークン</param>
+    /// <returns>Exit code</returns>
+    [Command("")]
+    public async Task<int> RunAsync(
+        [Argument] string size,
         string output,
         bool overwrite = false,
         CancellationToken cancellationToken = default)
@@ -87,16 +55,18 @@ public sealed class AppCommand : RootCommand
 
                 throw;
             }
+
+            return 0;
         }
         catch (ArgumentException argumentException)
         {
             await Console.Error.WriteLineAsync(argumentException.Message);
-            Environment.Exit(1);
+            return 1;
         }
         catch (Exception exception)
         {
             await Console.Error.WriteLineAsync(exception.ToString());
-            Environment.Exit(1);
+            return 1;
         }
     }
 }
